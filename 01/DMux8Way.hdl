@@ -17,4 +17,13 @@ CHIP DMux8Way {
 
     PARTS:
     // Put your code here:
+    // Use a dmux (2 way) for the MSB to pick between 2 demuxes (DMux4Way)
+    // Whichever dmux is picked, that's where our "in" variable is funneled
+    // 1st demux fills a, b, c, d
+    // 2nd demux fills e, f, g, h
+
+    DMux(in=in, sel=sel[2], a=dmuxOutputA, b=dmuxOutputB);
+
+    DMux4Way(in=dmuxOutputA, sel=sel[0..1], a=a, b=b, c=c, d=d);
+    DMux4Way(in=dmuxOutputB, sel=sel[0..1], a=e, b=f, c=g, d=h);
 }
