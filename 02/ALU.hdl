@@ -42,5 +42,39 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // Put you code here:
+
+    // if (zx == 1) set x = 0        // 16-bit constant
+    // Using a MUX, select 0 if zx is 1, else select x
+    Mux16(a=x, b=false, sel=zx, out=ourX0);
+
+    // if (nx == 1) set x = !x       // bitwise not
+    Not16(in=ourX0, out=notX);
+    Mux16(a=ourX0, b=notX, sel=nx, out=ourX1);
+
+    // if (zy == 1) set y = 0        // 16-bit constant
+    Mux16(a=y, b=false, sel=zy, out=ourY0);
+
+    // if (ny == 1) set y = !y       // bitwise not
+    Not16(in=ourY0, out=notY);
+    Mux16(a=ourY0, b=notY, sel=ny, out=ourY1);
+
+    // if (f == 1)  set out = x + y  // integer 2's complement addition
+    // if (f == 0)  set out = x & y  // bitwise and
+    Add16(a=ourX1, b=ourY1, out=xPlusY);
+    And16(a=ourX1, b=ourY1, out=xAndY);
+    Mux16(a=xAndY, b=xPlusY, sel=f, out=ourOut0);
+
+    // if (no == 1) set out = !out   // bitwise not
+    Not16(in=ourOut0, out=notOut);
+    Mux16(a=ourOut0, b=notOut, sel=no, out=ourOut1, out=out, out[15]=ng);
+    // if (out < 0) set ng = 1
+
+    // if (out == 0) set zr = 1
+    // Note that `out` is 16-bit
+    And16(a=ourOut1, b=true, out[0..7]=tempIn0, out[8..15]=tempIn1);
+    Or8Way(in=tempIn0, out=temp0);
+    Or8Way(in=tempIn1, out=temp1);
+    Or(a=temp0, b=temp1, out=temp2);
+    Not(in=temp2, out=zr);
 }
