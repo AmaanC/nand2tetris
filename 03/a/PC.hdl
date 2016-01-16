@@ -14,7 +14,20 @@
 CHIP PC {
     IN in[16],load,inc,reset;
     OUT out[16];
-
     PARTS:
     // Put your code here:
+
+
+    // If inc[t] == 1, out[t+1] = out[t] + 1
+    Inc16(in=loopWire, out=outIncd);
+    Mux16(a=loopWire, b=outIncd, sel=inc, out=FINALOUT1);
+
+    // If load[t] == 1
+    Mux16(a=FINALOUT1, b=in, sel=load, out=FINALOUT2);
+
+    // If reset[t] == 1
+    Mux16(a=FINALOUT2, b=false, sel=reset, out=FINALOUT3);
+
+    Register(in=FINALOUT3, load=true, out=loopWire, out=out);
+
 }
