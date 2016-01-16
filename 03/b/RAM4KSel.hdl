@@ -1,0 +1,9 @@
+CHIP RAM4KSel {
+    IN in[16], load, address[12], sel;
+    OUT out[16];
+
+    PARTS:
+
+    Mux(a=false, b=load, sel=sel, out=aLoad);
+    RAM4K(in=in, load=aLoad, address=address, out=out);
+}
