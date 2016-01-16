@@ -1,0 +1,9 @@
+CHIP RAM512Sel {
+    IN in[16], load, address[9], sel;
+    OUT out[16];
+
+    PARTS:
+
+    Mux(a=false, b=load, sel=sel, out=aLoad);
+    RAM512(in=in, load=aLoad, address=address, out=out);
+}
