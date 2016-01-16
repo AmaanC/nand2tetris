@@ -1,7 +1,6 @@
-// Used for the RAM8 module
-// Allows a register to be told whether it is selected or not, regardless of the load value
+// Used for the RAM64 module
+// Allows a RAM8 unit to be told whether it is selected or not, regardless of the load value
 // This way, if it isn't selected, it won't load a value
-// RegisterSel(in=aLoop, load=load, sel=a, out=aLoop, out=regaOut);
 
 CHIP RAM8Sel {
     IN in[16], load, address[3], sel;
