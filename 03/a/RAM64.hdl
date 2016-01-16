@@ -16,4 +16,18 @@ CHIP RAM64 {
 
     PARTS:
     // Put your code here:
+    // Bottom 3 bits select within a RAM unit
+    // Top 3 bits select RAM unit out of stack
+    DMux8Way(in=true, sel=address[3..5], a=a, b=b, c=c, d=d, e=e, f=f, g=g, h=h);
+
+    RAM8Sel(in=in, sel=a, load=load, address=address[0..2], out=aOut);
+    RAM8Sel(in=in, sel=b, load=load, address=address[0..2], out=bOut);
+    RAM8Sel(in=in, sel=c, load=load, address=address[0..2], out=cOut);
+    RAM8Sel(in=in, sel=d, load=load, address=address[0..2], out=dOut);
+    RAM8Sel(in=in, sel=e, load=load, address=address[0..2], out=eOut);
+    RAM8Sel(in=in, sel=f, load=load, address=address[0..2], out=fOut);
+    RAM8Sel(in=in, sel=g, load=load, address=address[0..2], out=gOut);
+    RAM8Sel(in=in, sel=h, load=load, address=address[0..2], out=hOut);
+
+    Mux8Way16(a=aOut, b=bOut, c=cOut, d=dOut, e=eOut, f=fOut, g=gOut, h=hOut, sel=address[3..5], out=out);
 }
