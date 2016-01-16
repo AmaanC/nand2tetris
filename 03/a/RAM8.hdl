@@ -18,30 +18,15 @@ CHIP RAM8 {
     // Put your code here:
     DMux8Way(in=true, sel=address, a=a, b=b, c=c, d=d, e=e, f=f, g=g, h=h);
     
-    // If a has been selected, pass on the actual load value. Else, pass 0
-    Mux(a=false, b=load, sel=a, out=aLoad);
-    Register(in=in, load=aLoad, out=regaOut);
-
-    Mux(a=false, b=load, sel=b, out=bLoad);
-    Register(in=in, load=bLoad, out=regbOut);
-
-    Mux(a=false, b=load, sel=c, out=cLoad);
-    Register(in=in, load=cLoad, out=regcOut);
-
-    Mux(a=false, b=load, sel=d, out=dLoad);
-    Register(in=in, load=dLoad, out=regdOut);
-
-    Mux(a=false, b=load, sel=e, out=eLoad);
-    Register(in=in, load=eLoad, out=regeOut);
-
-    Mux(a=false, b=load, sel=f, out=fLoad);
-    Register(in=in, load=fLoad, out=regfOut);
-
-    Mux(a=false, b=load, sel=g, out=gLoad);
-    Register(in=in, load=gLoad, out=reggOut);
-
-    Mux(a=false, b=load, sel=h, out=hLoad);
-    Register(in=in, load=hLoad, out=reghOut);
+    // If a has been selected, pass on the actual load value. Else, pass 0 (that way, the register continues to store memory)
+    RegisterSel(in=in, sel=a, load=load, out=regaOut);
+    RegisterSel(in=in, sel=b, load=load, out=regbOut);
+    RegisterSel(in=in, sel=c, load=load, out=regcOut);
+    RegisterSel(in=in, sel=d, load=load, out=regdOut);
+    RegisterSel(in=in, sel=e, load=load, out=regeOut);
+    RegisterSel(in=in, sel=f, load=load, out=regfOut);
+    RegisterSel(in=in, sel=g, load=load, out=reggOut);
+    RegisterSel(in=in, sel=h, load=load, out=reghOut);
 
     Mux8Way16(a=regaOut, b=regbOut, c=regcOut, d=regdOut, e=regeOut, f=regfOut, g=reggOut, h=reghOut, sel=address, out=out);
 }
