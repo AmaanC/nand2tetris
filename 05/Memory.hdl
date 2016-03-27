@@ -28,4 +28,68 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+
+    // ----------------------------------
+    // BEGINNING OF THOUGHTS
+
+    // The first 16K of our Memory module is for our RAM16K
+    // 16K = 2^14
+    // address (input) is 15 bits long
+    // So if the MSB is 0, we're trying to access the RAM16K
+    /*
+    Anything of the form 0b0xxx.. is for the RAM
+    */
+
+
+    // Screen uses 8K of memory
+    // So if MSB is 1, and MSB-1 is 0, we're accessing the screen
+    // The lowest screen access is 0b100000000000000 = 16384
+    // The highest screen access is 0b101111111111111 = 24575
+
+    /*
+    Anything of the form 0b10xx.. is for the screen
+    */
+
+    // The keyboard is just a single 16-bit register
+    /*
+    Exactly 0b110000000000000 is for the keyboard
+    */
+    // Else, it's invalid.
+
+
+    // ----------------------------------
+    // BEGINNING OF IMPLEMENTATION! (RAM first)
+
+    // If msb=0, loadRAM=load
+    // Else, load was meant for some other part of memory, and we'll just access the RAM
+    Mux(a=load, b=false, sel=address[14], out=loadRAM);
+
+    // Just use loadRAM to access memory or to update it
+    RAM16K(in=in, load=loadRAM, address=address[0..13], out=outRAM);
+
+
+    // ----------------------------------
+    // Screen now
+
+    Not(in=address[13], out=secondMSBNot);
+    And(a=address[14], b=secondMSBNot, out=useScreen);
+
+    Mux(a=false, b=load, sel=useScreen, out=loadScreen);
+
+    Screen(in=in, load=loadScreen, address=address[0..12], out=outScreen);
+
+    // ----------------------------------
+    // Keyboard!
+
+    // If we access anything above 0b11xx..
+    // we're going to get the keyboard. Invalid access causes undefined behavior, so deal with it
+
+    Keyboard(out=outKeyboard);
+
+    // ----------------------------------
+    // If the MSB is 00 or 01, we want the RAM
+    // 10 -> screen
+    // 11 -> keyboard (even if invalid)
+    Mux4Way16(a=outRAM, b=outRAM, c=outScreen, d=outKeyboard, sel=address[13..14], out=out);
+
 }
