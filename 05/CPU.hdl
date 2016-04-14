@@ -40,4 +40,81 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+    // C-type instructions include destinations, whereas A-type instructions don't
+    // This means that the order of our code *does* matter, since
+    // if we put the A-type code before the C-type, our C-type code
+    // for parsing destinations (and the other fields too, perhaps), will happen
+    // after storing the value into the A register, and then all hell will break loose
+
+    // So, let's do the C-type instruction first
+    // It's a cTypeInst if the MSB is 1
+    And(a=true, b=instruction[15], out=cTypeInst);
+
+    // Let's get d1, d2, d3
+    // Doing this, d1 = 0 if it's an A instruction
+    // and d1 = instruction[5] if it's a C instruction
+    And(a=cTypeInst, b=instruction[5], out=d1);
+    And(a=cTypeInst, b=instruction[4], out=d2);
+    And(a=cTypeInst, b=instruction[3], out=writeM);
+
+    // Let's get j1, j2, j3
+    And(a=cTypeInst, b=instruction[2], out=j1);
+    And(a=cTypeInst, b=instruction[1], out=j2);
+    And(a=cTypeInst, b=instruction[0], out=j3);
+
+    // According to http://nand2tetris.org/chapters/chapter%2004.pdf, page 11 (of the PDF)
+    // or page 64 of the book, "a" determines if we use A or M
+    // a = instruction[12]
+    // The value of M is given to us as inM
+    // We can use our register to get the value of A
+    Not(in=instruction[15], out=loadA);
+    Or(a=loadA, b=d1, out=loadAFinal);
+    Mux16(a=instruction, b=outALU, sel=cTypeInst, out=ARegin);
+
+    // Let's finish with the easy A-type instruction!
+    // Example: @123
+    // The instruction loads the value 123 into the A register
+    // As a 16-bit instruction, this will look like this:
+    // 0b0vvvvvvvvvvvvvvv
+    // The v's will be stored into register A, and everyone will have a jolly good time!
+
+    // If the instruction's MSB is 0, we want to set the load input for register A to 1
+    // Else, we want it to be 1
+    ARegister(in=ARegin, load=loadAFinal, out=regA, out[0..14]=addressM);
+    DRegister(in=outALU, load=d2, out=regD);
+    Mux16(a=regA, b=inM, sel=instruction[12], out=AorM);
+
+    ALU(
+        x=regD,
+        y=AorM,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        out=outALU,
+        out=outM,
+        zr=eq0,
+        ng=lt0
+    );
+
+    Not(in=lt0, out=gteq0);
+    Not(in=eq0, out=not0);
+    
+    And(a=not0, b=gteq0, out=gt0);
+
+    // Now we know if the output is less than, equal to, or greater than 0
+    // i.e. lt0, eq0, and gt0
+
+    And(a=lt0, b=j1, out=jlt); // If it actually was lt and you wanted to jump if it was lt
+    And(a=eq0, b=j2, out=jeq);
+    And(a=gt0, b=j3, out=jgt);
+    Or(a=jlt, b=jeq, out=jlOrEq); // If you wanted to and it was less than || it was and you wanted equal
+
+    // This one is a special snowflake, because it covers all the cases:
+    Or(a=jlOrEq, b=jgt, out=jmp); // Was and wanted: lt || eq || gt
+
+    PC(in=regA, load=jmp, inc=true, reset=reset, out[0..14]=pc);
 }
